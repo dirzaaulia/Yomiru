@@ -1,0 +1,135 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+import java.io.FileInputStream
+import java.util.Properties
+
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.jetbrains.kotlin.serialization)
+    alias(libs.plugins.kotlin.kapt)
+}
+
+android {
+    namespace = "com.dirzaaulia.yomiru"
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId = "com.dirzaaulia.yomiru"
+        minSdk = 29
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Expose MAL_CLIENT_ID from local.properties to BuildConfig
+        buildConfigField(
+            type = "String",
+            name = "MAL_CLIENT_ID",
+            value = getLocalProperty("MAL_CLIENT_ID", project) // No extra quotes needed here
+        )
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    tasks.withType<KotlinJvmCompile>().configureEach {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
+    buildFeatures {
+        buildConfig = true
+        compose = true
+    }
+}
+
+dependencies {
+
+    //Test and Debug
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
+
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+
+    implementation(libs.androidx.material3.expressive)
+
+    //Material Icon
+    implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.material.icons.extended)
+
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.androidx.material3.navigation3)
+    implementation(libs.kotlinx.serialization.core)
+    implementation(libs.kotlinx.serialization.json)
+
+    //Material 3 Adaptive
+    implementation(libs.androidx.material3.adaptive.layout)
+    implementation(libs.androidx.material3.adaptive.navigation.suite)
+
+    //Koin
+    implementation(libs.koin.android)
+    implementation(libs.koin.core)
+    implementation(libs.koin.compose)
+
+    //Ktor
+    implementation(libs.bundles.ktor)
+
+    //Coil
+    implementation(libs.bundles.coil)
+
+    //Chucker
+    debugImplementation(libs.chucker.debug)
+    releaseImplementation(libs.chucker.release)
+
+    //Jetpack Paging
+    implementation(libs.bundles.paging)
+
+    //Media3
+    implementation(libs.bundles.media3)
+
+    //Browser - Custom Tab Intent
+    implementation(libs.androidx.browser)
+
+    //DataStore
+    implementation(libs.androidx.datastore)
+
+    //SplashScreen
+    implementation(libs.androidx.splashscreen)
+}
+
+// Helper function to read from local.properties
+fun getLocalProperty(key: String, project: Project): String {
+    val properties = Properties()
+    val localPropertiesFile = project.rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        properties.load(FileInputStream(localPropertiesFile))
+        return properties.getProperty(key) ?: ""
+    }
+    return "" // Return empty or handle error if not found
+}
