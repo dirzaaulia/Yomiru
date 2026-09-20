@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 
+        Animatable Calligraphy Vector for Splash Screen
+        Synchronized perfectly with ic_launcher_foreground.xml
+    -->
+
+    <!-- STROKE 1: Top Bar -->
+    <path android:name="s1_1" android:strokeColor="#FFFFFF" android:strokeWidth="5.0" android:strokeLineCap="round" android:trimPathEnd="0.0" android:pathData="M 34,40 Q 54,38 74,40" />
+    <path android:name="s1_2" android:strokeColor="#FFFFFF" android:strokeWidth="2.5" android:strokeLineCap="round" android:trimPathEnd="0.0" android:pathData="M 31,39 L 36,40" />
+    <path android:name="s1_3" android:strokeColor="#FFFFFF" android:strokeWidth="2.0" android:strokeLineCap="round" android:trimPathEnd="0.0" android:pathData="M 72,40 L 76,41" />
+
+    <!-- STROKE 2: Vertical Spine -->
+    <path android:name="s2_1" android:strokeColor="#FFFFFF" android:strokeWidth="6.0" android:strokeLineCap="round" android:trimPathEnd="0.0" android:pathData="M 54,28 Q 53,50 54,75" />
+    <path android:name="s2_2" android:strokeColor="#FFFFFF" android:strokeWidth="3.0" android:strokeLineCap="round" android:trimPathEnd="0.0" android:pathData="M 54,75 L 50,71" />
+    <path android:name="s2_3" android:strokeColor="#FFFFFF" android:strokeWidth="3.5" android:strokeLineCap="round" android:trimPathEnd="0.0" android:pathData="M 52,26 L 55,28" />
+
+    <!-- STROKE 3: Left Sweep -->
+    <path android:name="s3_1" android:strokeColor="#FFFFFF" android:strokeWidth="5.0" android:strokeLineCap="round" android:trimPathEnd="0.0" android:pathData="M 54,42 Q 44,56 32,72" />
+    <path android:name="s3_2" android:strokeColor="#FFFFFF" android:strokeWidth="2.0" android:strokeLineCap="round" android:trimPathEnd="0.0" android:pathData="M 36,67 Q 31,71 28,74" />
+
+    <!-- STROKE 4: Right Sweep -->
+    <path android:name="s4_1" android:strokeColor="#FFFFFF" android:strokeWidth="5.0" android:strokeLineCap="round" android:trimPathEnd="0.0" android:pathData="M 54,42 Q 64,56 76,72" />
+    <path android:name="s4_2" android:strokeColor="#FFFFFF" android:strokeWidth="3.0" android:strokeLineCap="round" android:trimPathEnd="0.0" android:pathData="M 72,68 Q 76,72 80,74" />
+
+    <!-- STROKE 5: Lower Crossbar -->
+    <path android:name="s5_1" android:strokeColor="#FFFFFF" android:strokeWidth="4.5" android:strokeLineCap="round" android:trimPathEnd="0.0" android:pathData="M 42,62 Q 54,60 66,62" />
+
+    <!-- INK SPLATTERS -->
+    <path android:name="ink_splashes" android:fillColor="#FFFFFF" android:fillAlpha="0.0" android:pathData="
+        M 30,33 m -1.5,0 a 1.5,1.5 0 1,1 3,0 a 1.5,1.5 0 1,1 -3,0
+        M 78,36 m -1.5,0 a 1.5,1.5 0 1,1 3,0 a 1.5,1.5 0 1,1 -3,0
+        M 26,73 m -1.0,0 a 1.0,1.0 0 1,1 2,0 a 1.0,1.0 0 1,1 -2,0
+        M 82,75 m -1.5,0 a 1.5,1.5 0 1,1 3,0 a 1.5,1.5 0 1,1 -3,0
+        M 48,78 m -1.5,0 a 1.5,1.5 0 1,1 3,0 a 1.5,1.5 0 1,1 -3,0" />
+
+</vector>

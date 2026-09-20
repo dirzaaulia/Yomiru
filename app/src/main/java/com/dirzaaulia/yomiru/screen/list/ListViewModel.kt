@@ -2,58 +2,65 @@ package com.dirzaaulia.yomiru.screen.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.PagingData
-import androidx.paging.cachedIn
-import com.dirzaaulia.yomiru.model.MalNode
-import com.dirzaaulia.yomiru.pagingsource.MalNodePagingSource
+import com.dirzaaulia.yomiru.model.MediaListGroupItem
 import com.dirzaaulia.yomiru.repository.NetworkRepository
+import com.dirzaaulia.yomiru.screen.home.YomiruMenu
+import com.dirzaaulia.yomiru.util.ResponseResult
 import id.pgidata.gomamam.repository.DataStoreRepository
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flatMapLatest
-
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class ListViewModel(
     private val repository: NetworkRepository,
-    datastore: DataStoreRepository
+    private val dataStore: DataStoreRepository,
 ): ViewModel() {
 
-    private val _selectedIndex: MutableStateFlow<Int> = MutableStateFlow(0)
+    val accessToken = dataStore.accessTokenFlow
 
-    private val _selectedStatus: MutableStateFlow<Int> = MutableStateFlow(0)
-    val selectedStatus = _selectedStatus.asStateFlow()
+    private val _selectedMenu = MutableStateFlow(YomiruMenu.Anime)
+    val selectedMenu = _selectedMenu.asStateFlow()
 
-    val accessToken = datastore.accessTokenFlow
+    private val _animeList = MutableStateFlow<ResponseResult<List<MediaListGroupItem>>>(ResponseResult.Loading)
+    private val _mangaList = MutableStateFlow<ResponseResult<List<MediaListGroupItem>>>(ResponseResult.Loading)
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val nodeList: Flow<PagingData<MalNode>> = accessToken.flatMapLatest { token ->
-        _selectedIndex.flatMapLatest { index ->
-            _selectedStatus.flatMapLatest { status ->
-                if (token.isEmpty()) emptyFlow()
-                else Pager(
-                    config = PagingConfig(pageSize = 25),
-                    pagingSourceFactory = {
-                        MalNodePagingSource(
-                            repository = repository,
-                            code = index,
-                            status = status
-                        )
-                    }
-                ).flow
-            }
-        }
-    }.cachedIn(viewModelScope)
+    val currentList: StateFlow<ResponseResult<List<MediaListGroupItem>>> =
+        combine(_selectedMenu, _animeList, _mangaList) { menu, anime, manga ->
+            if (menu == YomiruMenu.Manga) manga else anime
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, ResponseResult.Loading)
 
-    fun setSelectedIndex(index: Int) {
-        _selectedIndex.value = index
+    init {
+        getUserAnimeList()
+        getUserMangaList()
     }
 
-    fun setSelectedStatus(index: Int) {
-        _selectedStatus.value = index
+    fun setSelectedMenu(menu: YomiruMenu) {
+        _selectedMenu.value = menu
+    }
+
+    fun refreshList() {
+        if (_selectedMenu.value == YomiruMenu.Manga) {
+            getUserMangaList()
+        } else {
+            getUserAnimeList()
+        }
+    }
+
+    fun getUserAnimeList() {
+        viewModelScope.launch {
+            _animeList.value = ResponseResult.Loading
+            _animeList.value = repository.getUserMediaList("anime")
+        }
+    }
+
+    fun getUserMangaList() {
+        viewModelScope.launch {
+            _mangaList.value = ResponseResult.Loading
+            _mangaList.value = repository.getUserMediaList("manga")
+        }
     }
 }

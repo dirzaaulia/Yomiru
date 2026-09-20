@@ -24,11 +24,11 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Expose MAL_CLIENT_ID from local.properties to BuildConfig
+        // Expose ANILIST_CLIENT_ID from local.properties to BuildConfig
         buildConfigField(
             type = "String",
-            name = "MAL_CLIENT_ID",
-            value = getLocalProperty("MAL_CLIENT_ID", project) // No extra quotes needed here
+            name = "ANILIST_CLIENT_ID",
+            value = getLocalProperty("ANILIST_CLIENT_ID", project) // No extra quotes needed here
         )
     }
 
@@ -53,6 +53,11 @@ android {
     buildFeatures {
         buildConfig = true
         compose = true
+    }
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
     }
 }
 
@@ -129,7 +134,7 @@ fun getLocalProperty(key: String, project: Project): String {
     val localPropertiesFile = project.rootProject.file("local.properties")
     if (localPropertiesFile.exists()) {
         properties.load(FileInputStream(localPropertiesFile))
-        return properties.getProperty(key) ?: ""
+        return properties.getProperty(key)?.replace("\"", "")?.let { "\"$it\"" } ?: "\"\""
     }
     return "" // Return empty or handle error if not found
 }

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/vector_kanji_hon_ink">
+
+    <!-- STROKE 1 -->
+    <target android:name="s1_1" android:animation="@animator/animator_stroke_1" />
+    <target android:name="s1_2" android:animation="@animator/animator_stroke_1" />
+    <target android:name="s1_3" android:animation="@animator/animator_stroke_1" />
+
+    <!-- STROKE 2 -->
+    <target android:name="s2_1" android:animation="@animator/animator_stroke_2" />
+    <target android:name="s2_2" android:animation="@animator/animator_stroke_2" />
+    <target android:name="s2_3" android:animation="@animator/animator_stroke_2" />
+
+    <!-- STROKE 3 -->
+    <target android:name="s3_1" android:animation="@animator/animator_stroke_3" />
+    <target android:name="s3_2" android:animation="@animator/animator_stroke_3" />
+
+    <!-- STROKE 4 -->
+    <target android:name="s4_1" android:animation="@animator/animator_stroke_4" />
+    <target android:name="s4_2" android:animation="@animator/animator_stroke_4" />
+
+    <!-- STROKE 5 -->
+    <target android:name="s5_1" android:animation="@animator/animator_stroke_5" />
+
+    <!-- INK DROPLETS LAYER -->
+    <target android:name="ink_splashes" android:animation="@animator/animator_ink_splash_alpha" />
+
+</animated-vector>

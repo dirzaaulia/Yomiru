@@ -9,43 +9,57 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.dirzaaulia.yomiru.screen.home.YomiruMenu
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SegmentedButtons(
-    doOnItemClick: (Int) -> Unit
+    modifier: Modifier = Modifier,
+    selectedMenu: YomiruMenu = YomiruMenu.Anime,
+    onMenuSelected: (YomiruMenu) -> Unit = {}
 ) {
-    val options = listOf("Anime", "Manga")
-    var selectedIndex by remember { mutableIntStateOf(0) }
+    val selectedIndex = if (selectedMenu == YomiruMenu.Manga) 1 else 0
+    SegmentedButtons(
+        modifier = modifier,
+        selectedIndex = selectedIndex,
+        onOptionSelected = { index ->
+            val menu = if (index == 1) YomiruMenu.Manga else YomiruMenu.Anime
+            onMenuSelected(menu)
+        }
+    )
+}
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun SegmentedButtons(
+    modifier: Modifier = Modifier,
+    selectedIndex: Int = 0,
+    options: List<String> = listOf("Anime", "Manga"),
+    onOptionSelected: (Int) -> Unit
+) {
     Row(
-        Modifier.padding(horizontal = 8.dp),
+        modifier = modifier.padding(horizontal = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
     ) {
-        val modifiers = listOf(Modifier.weight(1f), Modifier.weight(1f))
-
         options.forEachIndexed { index, label ->
             ToggleButton(
                 checked = selectedIndex == index,
                 onCheckedChange = {
-                    selectedIndex = index
+                    onOptionSelected(index)
                 },
-                modifier = modifiers[index].semantics { role = Role.RadioButton },
-                shapes =
-                    when (index) {
-                        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                        options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                        else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-                    }
+                modifier = Modifier
+                    .weight(1f)
+                    .semantics { role = Role.RadioButton },
+                shapes = when (index) {
+                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                    options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                }
             ) {
                 Text(
                     text = label,

@@ -7,24 +7,29 @@ import androidx.window.core.layout.WindowSizeClass.Companion.HEIGHT_DP_MEDIUM_LO
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
 
+/**
+ * Calculates adaptive media poster card dimensions (Width, Height)
+ * based on the active WindowSizeClass matrix.
+ */
 fun getCarouselHomeSize(windowSizeClass: WindowSizeClass): Pair<Dp, Dp> {
     return if (!windowSizeClass.isHeightAtLeastBreakpoint(HEIGHT_DP_MEDIUM_LOWER_BOUND)) {
-        Pair(200.dp, 280.dp)
+        // Phone Landscape (Compact Height < 480dp)
+        Pair(170.dp, 238.dp)
     } else {
         when {
             windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_EXPANDED_LOWER_BOUND) -> {
-                // return for EXPANDED width size class
-                Pair(260.dp, 364.dp)
+                // Large Tablets / Desktop / Unfolded Foldable Landscape (> 840dp)
+                Pair(220.dp, 308.dp)
             }
 
             windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_MEDIUM_LOWER_BOUND) -> {
-                // return for MEDIUM width size class
-                Pair(260.dp, 364.dp)
+                // Foldables in Portrait / Small Tablets / Medium Width (600dp - 840dp)
+                Pair(200.dp, 280.dp)
             }
 
             else -> {
-                // return for COMPACT width size class
-                Pair(200.dp, 280.dp)
+                // Standard Phone Portrait (< 600dp)
+                Pair(160.dp, 224.dp)
             }
         }
     }

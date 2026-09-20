@@ -1,9 +1,9 @@
 package com.dirzaaulia.yomiru.screen.detail
 
 enum class DetailAnimeTabDestination {
-    INFO, CHARACTER, EPISODE, VIDEOS, RECOMMENDATION, RELATION, REVIEW, STATISTIC, STAFF
+    INFO, CHARACTERS, STAFF, EPISODES, REVIEWS, STATS, RECOMMENDED
 }
 
 enum class DetailMangaTabDestination {
-    INFO, CHARACTER, RECOMMENDATION, STATISTIC,
+    INFO, CHARACTERS, STAFF, REVIEWS, STATS, RECOMMENDED
 }

@@ -1,7 +1,5 @@
 package com.dirzaaulia.yomiru.model.request
 
-import com.dirzaaulia.yomiru.network.Anime
-
 sealed class SearchRequest {
     object Default : SearchRequest()
     data class General(val query: SearchQuery) : SearchRequest()
@@ -9,11 +7,15 @@ sealed class SearchRequest {
         val year: Int,
         val season: String,
         val type: String?,
-        val sfw: Boolean
+        val sort: String? = null,
+        val genre: Int? = null,
+        val sfw: Boolean = true
     ) : SearchRequest()
     data class Top(
-        val type: String,
-        val filter: String,
+        val type: String? = null,
+        val filter: String? = null,
+        val sort: String? = "SCORE_DESC",
+        val country: String? = null,
         val rating: String? = null,
         val sfw: Boolean? = null
     ) : SearchRequest()
@@ -23,6 +25,7 @@ data class SearchQuery(
     // Common Fields
     var query: String? = null,
     var type: String? = null,
+    var country: String? = null,
     var sfw: Boolean = true,
     var page: Int = 1,
     var limit: Int = 25,
@@ -33,6 +36,7 @@ data class SearchQuery(
     var status: String? = null,
     var rating: String? = null,
     var genres: Int? = null,
+    var genreName: String? = null,
     var orderBy: String? = null,
     var sort: String? = null,
 
@@ -42,26 +46,4 @@ data class SearchQuery(
 
     //Top Search Specific
     var filter: String? = null
-) {
-    companion object {
-        fun SearchQuery.transformIntoResources(): Anime {
-            return Anime(
-                query = query,
-                type = type,
-                minScore = minScore,
-                maxScore = maxScore,
-                status = status,
-                rating = rating,
-                sfw = sfw,
-                genres = genres,
-                orderBy = orderBy,
-                sort = sort,
-                page = page,
-                limit = limit,
-                // Add these to your network model Anime if they aren't there
-//                year = year,
-//                season = season
-            )
-        }
-    }
-}
+)

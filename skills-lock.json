@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "skills": {
+    "compose-multiplatform": {
+      "source": "athevon/genjutsu",
+      "sourceType": "github",
+      "skillPath": "skills/_jutsu/compose-multiplatform/SKILL.md",
+      "computedHash": "10fef1026470ba3e542179e5738b597b26abec17542eccf87f9d5a34ed7c16de"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/find-skills/SKILL.md",
+      "computedHash": "b146008599c31057cef1c145774cea5d5afb30e8f43fa802e47a4b461419aaaf"
+    },
+    "kotlin-multiplatform": {
+      "source": "vitorpamplona/amethyst",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/kotlin-multiplatform/SKILL.md",
+      "computedHash": "55802eb720a25e79767804ef1cdd24e418c320e55256da4ddf5e1bac6e95a65e"
+    }
+  }
+}

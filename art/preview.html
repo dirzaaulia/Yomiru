@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Yomiru - Authentic Brush Calligraphy 「本」</title>
+  <style>
+    :root {
+      --bg: #050508;
+      --card-bg: #0b0c13;
+      --text: #ffffff;
+      --subtext: #8e93a6;
+      --accent: #ff5500;
+      --border: #181b28;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      padding: 40px 24px 80px;
+      min-height: 100vh;
+    }
+    header {
+      text-align: center;
+      max-width: 860px;
+      margin: 0 auto 36px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 6px 16px;
+      background: rgba(255, 85, 0, 0.15);
+      color: #ff7733;
+      border: 1px solid rgba(255, 85, 0, 0.35);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+    h1 {
+      font-size: 40px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      margin-bottom: 12px;
+    }
+    p.lead {
+      font-size: 16px;
+      color: var(--subtext);
+      line-height: 1.6;
+    }
+    .main-stage {
+      max-width: 900px;
+      margin: 0 auto 48px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    }
+    .phone-frame {
+      width: 290px;
+      height: 500px;
+      background: #050508;
+      border: 10px solid #1a1d2c;
+      border-radius: 46px;
+      margin: 24px auto 32px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.05);
+    }
+    .phone-speaker {
+      position: absolute;
+      top: 14px;
+      width: 60px;
+      height: 5px;
+      background: #25293d;
+      border-radius: 3px;
+    }
+    .splash-label {
+      position: absolute;
+      bottom: 24px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: #585d73;
+      text-transform: uppercase;
+    }
+    .anim-canvas {
+      width: 175px;
+      height: 175px;
+    }
+
+    /* REAL HUMAN CALLIGRAPHY DRAWING ANIMATION */
+    /* Subtle, continuous flow of ink from brush tip */
+    .brush-path {
+      fill: none;
+      stroke: #FFFFFF;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Main stroke masks */
+    @keyframes drawBrushStroke {
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes inkFlickDrop {
+      0% { opacity: 0; transform: scale(0.2) translate(-2px, -2px); }
+      60% { opacity: 1; transform: scale(1.15) translate(0, 0); }
+      100% { opacity: 0.95; transform: scale(1); }
+    }
+
+    /* Timing modeled after real calligrapher movement */
+    .playing #mask_stroke_1 {
+      stroke-dasharray: 80;
+      stroke-dashoffset: 80;
+      animation: drawBrushStroke 320ms cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+      animation-delay: 80ms;
+    }
+    .playing #mask_stroke_2 {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+      animation: drawBrushStroke 360ms cubic-bezier(0.3, 0, 0.2, 1) forwards;
+      animation-delay: 360ms;
+    }
+    .playing #mask_stroke_3 {
+      stroke-dasharray: 90;
+      stroke-dashoffset: 90;
+      animation: drawBrushStroke 320ms cubic-bezier(0.2, 0.6, 0.3, 1) forwards;
+      animation-delay: 660ms;
+    }
+    .playing #mask_stroke_4 {
+      stroke-dasharray: 95;
+      stroke-dashoffset: 95;
+      animation: drawBrushStroke 340ms cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+      animation-delay: 920ms;
+    }
+    .playing #mask_stroke_5 {
+      stroke-dasharray: 60;
+      stroke-dashoffset: 60;
+      animation: drawBrushStroke 240ms cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+      animation-delay: 1200ms;
+    }
+    .playing .ink-splatter-group {
+      opacity: 0;
+      transform-origin: center;
+      animation: inkFlickDrop 350ms cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      animation-delay: 1300ms;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+    }
+    .btn {
+      background: #ff5500;
+      border: none;
+      color: #fff;
+      padding: 12px 28px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(255, 85, 0, 0.35);
+      transition: all 0.15s ease;
+    }
+    .btn:hover {
+      background: #ff6a1f;
+      transform: translateY(-2px);
+    }
+    .btn-secondary {
+      background: #191c28;
+      color: #d0d4e4;
+      border: 1px solid var(--border);
+      box-shadow: none;
+    }
+    .btn-secondary:hover {
+      background: #252a3d;
+      color: #fff;
+    }
+
+    /* Launcher Showcase */
+    .section-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 48px auto 20px;
+      max-width: 900px;
+      text-align: left;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      text-align: center;
+    }
+    .launcher-box {
+      width: 114px;
+      height: 114px;
+      background: #050508;
+      border-radius: 28px;
+      margin: 0 auto 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.06);
+    }
+    .launcher-box.circle {
+      border-radius: 50%;
+    }
+    .launcher-box svg {
+      width: 80px;
+      height: 80px;
+    }
+    .card-label {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .card-sub {
+      font-size: 13px;
+      color: var(--subtext);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="badge">Authentic Ink & Bristle Calligraphy</div>
+    <h1>Master Shodō 「本」 with Real Stroke Flow</h1>
+    <p class="lead">
+      Background: <code style="color: #ff7733;">#050508</code> &bull; Pure White <code style="color: #ffffff;">#FFFFFF</code> Sumi Ink.<br/>
+      Includes authentic <strong>dry-brush voids (*Kasure*)</strong>, <strong>separated hair bristles</strong>, and a <strong>subtle stroke-by-stroke brush flow</strong> as drawn by a real calligrapher.
+    </p>
+  </header>
+
+  <div class="main-stage">
+    <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">🎬 Subtle Human Drawing Motion</h2>
+    <p style="font-size: 14px; color: var(--subtext); margin-bottom: 12px;">Watch the ink physically flow from left-to-right, down the spine, and through the sweeping brush strokes</p>
+
+    <div class="phone-frame">
+      <div class="phone-speaker"></div>
+      
+      <svg id="splashSvg" class="anim-canvas playing" viewBox="0 0 108 108">
+        <defs>
+          <!-- CLIP MASKS: These progressively reveal the textured ink strokes from brush entry to lift-off -->
+          <clipPath id="clip_stroke_1">
+            <path id="mask_stroke_1" class="brush-path" d="M 24,35 Q 52,34 78,36" stroke-width="26" />
+          </clipPath>
+
+          <clipPath id="clip_stroke_2">
+            <path id="mask_stroke_2" class="brush-path" d="M 53,12 L 53,92" stroke-width="28" />
+          </clipPath>
+
+          <clipPath id="clip_stroke_3">
+            <path id="mask_stroke_3" class="brush-path" d="M 52,38 Q 45,58 12,87" stroke-width="28" />
+          </clipPath>
+
+          <clipPath id="clip_stroke_4">
+            <path id="mask_stroke_4" class="brush-path" d="M 54,38 Q 62,58 98,88" stroke-width="30" />
+          </clipPath>
+
+          <clipPath id="clip_stroke_5">
+            <path id="mask_stroke_5" class="brush-path" d="M 33,63 L 73,63" stroke-width="22" />
+          </clipPath>
+        </defs>
+
+        <!-- STROKE 1: Top Bar (Deep ink pool + bristle grain + dry-brush split) -->
+        <g clip-path="url(#clip_stroke_1)">
+          <!-- Main heavy ink body -->
+          <path fill="#FFFFFF" d="
+            M 26,30 
+            C 24,26 28,19 38,18 
+            C 44,17 43,26 36,30 
+            C 46,29 64,29 74,30 
+            C 81,30 85,32 82,36 
+            C 79,39 71,38 67,37 
+            C 55,37 38,38 27,40 
+            C 24,40 22,37 23,34 Z" />
+          <!-- Parallel ink bristle streaks (Dry brush / Kasure) -->
+          <path fill="#FFFFFF" d="M 38,32 Q 55,31 72,32 Q 55,33 38,32 Z" />
+          <path fill="#FFFFFF" d="M 77,29 C 81,29 83,31 79,32 Z" />
+          <path fill="#FFFFFF" d="M 80,34 C 84,35 83,37 79,37 Z" />
+          <!-- Internal paper void cut -->
+          <path fill="#050508" d="M 44,34 Q 58,33 66,35 Q 58,35 44,34 Z" />
+        </g>
+
+        <!-- STROKE 2: Center Vertical Spine (Heavy ink entry, dry-brush grain, bottom flick) -->
+        <g clip-path="url(#clip_stroke_2)">
+          <!-- Main heavy vertical trunk -->
+          <path fill="#FFFFFF" d="
+            M 52,14 
+            C 48,15 46,19 49,23 
+            C 51,25 56,26 57,29 
+            C 58,33 57,41 58,51 
+            C 59,66 58,79 57,86 
+            C 56,90 53,93 47,94 
+            C 43,94 41,92 43,90 
+            C 46,88 49,85 49,81 
+            C 50,71 50,53 49,39 
+            C 48,29 46,21 52,14 Z" />
+          <!-- Bristle grain streak along the spine -->
+          <path fill="#FFFFFF" d="M 52,28 Q 54,58 53,82 Q 51,58 52,28 Z" />
+          <path fill="#FFFFFF" d="M 45,93 C 42,95 39,96 42,97 C 46,96 47,94 45,93 Z" />
+          <!-- Dry brush vertical void -->
+          <path fill="#050508" d="M 53,44 Q 54,62 53,74 Q 52,62 53,44 Z" />
+        </g>
+
+        <!-- STROKE 3: Left Sweeping Wing (Harai with authentic ragged feathered brush hairs) -->
+        <g clip-path="url(#clip_stroke_3)">
+          <path fill="#FFFFFF" d="
+            M 50,39 
+            C 48,43 44,49 40,56 
+            C 35,63 29,71 20,79 
+            C 17,81 13,84 11,85 
+            C 10,85 10,83 13,81 
+            C 19,77 27,69 33,60 
+            C 39,51 44,44 47,39 Z" />
+          <!-- Splitting brush hairs at the sweep -->
+          <path fill="#FFFFFF" d="M 16,84 C 12,87 10,89 12,89 C 15,87 18,83 16,84 Z" />
+          <path fill="#FFFFFF" d="M 22,79 C 19,82 17,84 20,83 Z" />
+          <path fill="#FFFFFF" d="M 28,73 Q 22,78 18,82 Q 22,77 28,73 Z" />
+          <!-- Internal hair split void -->
+          <path fill="#050508" d="M 33,66 Q 26,73 20,78 Q 26,72 33,66 Z" />
+        </g>
+
+        <!-- STROKE 4: Right Sweeping Wing (Heavy momentum, ink pooling, feathered finish) -->
+        <g clip-path="url(#clip_stroke_4)">
+          <path fill="#FFFFFF" d="
+            M 55,41 
+            C 59,46 65,54 72,63 
+            C 78,70 84,77 91,82 
+            C 95,84 97,85 95,86 
+            C 92,87 87,85 81,81 
+            C 74,76 67,68 61,59 
+            C 57,52 55,46 55,41 Z" />
+          <!-- Bristle flicks -->
+          <path fill="#FFFFFF" d="M 93,84 C 97,86 98,87 95,87 Z" />
+          <path fill="#FFFFFF" d="M 86,83 C 90,85 91,86 88,86 Z" />
+          <path fill="#FFFFFF" d="M 76,73 Q 84,78 90,82 Q 84,77 76,73 Z" />
+          <!-- Dry brush void -->
+          <path fill="#050508" d="M 68,67 Q 76,74 84,79 Q 76,73 68,67 Z" />
+        </g>
+
+        <!-- STROKE 5: Lower Crossbar (Heavy horizontal ink press) -->
+        <g clip-path="url(#clip_stroke_5)">
+          <path fill="#FFFFFF" d="
+            M 35,61 
+            C 42,60 51,60 61,61 
+            C 66,61 73,62 75,64 
+            C 76,66 73,67 69,66 
+            C 59,65 47,65 37,66 
+            C 33,66 31,64 33,62 
+            C 34,61 35,61 35,61 Z" />
+          <!-- Dry brush streak across -->
+          <path fill="#FFFFFF" d="M 40,63 Q 53,62 65,63 Q 53,63.5 40,63 Z" />
+        </g>
+
+        <!-- INK SPLATTERS & DROPLETS (Bursting upon calligraphic flick) -->
+        <g class="ink-splatter-group">
+          <!-- Top brush contact droplets -->
+          <circle fill="#FFFFFF" cx="37" cy="17" r="1.6" />
+          <circle fill="#FFFFFF" cx="42" cy="15" r="1.0" />
+          <circle fill="#FFFFFF" cx="22" cy="27" r="1.4" />
+          <!-- Right horizontal spray -->
+          <circle fill="#FFFFFF" cx="86" cy="30" r="1.5" />
+          <circle fill="#FFFFFF" cx="89" cy="33" r="1.0" />
+          <circle fill="#FFFFFF" cx="84" cy="40" r="1.2" />
+          <!-- Left sweep flick droplets -->
+          <circle fill="#FFFFFF" cx="9" cy="87" r="1.7" />
+          <circle fill="#FFFFFF" cx="6" cy="90" r="1.1" />
+          <circle fill="#FFFFFF" cx="12" cy="91" r="0.8" />
+          <path fill="#FFFFFF" d="M 14,86 Q 11,88 13,89 Z" />
+          <!-- Right sweep flick droplets -->
+          <circle fill="#FFFFFF" cx="97" cy="85" r="1.6" />
+          <circle fill="#FFFFFF" cx="100" cy="88" r="1.0" />
+          <circle fill="#FFFFFF" cx="94" cy="89" r="1.3" />
+          <!-- Bottom trunk ink drop -->
+          <circle fill="#FFFFFF" cx="41" cy="98" r="1.4" />
+          <circle fill="#FFFFFF" cx="38" cy="96" r="0.9" />
+          <!-- Center dry brush micro-droplets -->
+          <circle fill="#FFFFFF" cx="45" cy="51" r="0.8" />
+          <circle fill="#FFFFFF" cx="63" cy="52" r="0.9" />
+        </g>
+      </svg>
+
+      <div class="splash-label">YOMIRU</div>
+    </div>
+
+    <div class="controls">
+      <button class="btn" onclick="replayAnimation()">▶ Replay Stroke Flow Animation</button>
+    </div>
+  </div>
+
+  <div class="section-title">📱 Launcher Icon Scale (Static State)</div>
+  <div class="grid">
+    <div class="card">
+      <div class="launcher-box">
+        <svg viewBox="0 0 108 108">
+          <!-- Full static master artwork with all dry-brush textures and split bristles -->
+          <!-- Stroke 1 -->
+          <path fill="#FFFFFF" d="M 26,30 C 24,26 28,19 38,18 C 44,17 43,26 36,30 C 46,29 64,29 74,30 C 81,30 85,32 82,36 C 79,39 71,38 67,37 C 55,37 38,38 27,40 C 24,40 22,37 23,34 Z" />
+          <path fill="#FFFFFF" d="M 38,32 Q 55,31 72,32 Q 55,33 38,32 Z" />
+          <path fill="#FFFFFF" d="M 77,29 C 81,29 83,31 79,32 Z" />
+          <path fill="#FFFFFF" d="M 80,34 C 84,35 83,37 79,37 Z" />
+          <path fill="#050508" d="M 44,34 Q 58,33 66,35 Q 58,35 44,34 Z" />
+
+          <!-- Stroke 2 -->
+          <path fill="#FFFFFF" d="M 52,14 C 48,15 46,19 49,23 C 51,25 56,26 57,29 C 58,33 57,41 58,51 C 59,66 58,79 57,86 C 56,90 53,93 47,94 C 43,94 41,92 43,90 C 46,88 49,85 49,81 C 50,71 50,53 49,39 C 48,29 46,21 52,14 Z" />
+          <path fill="#FFFFFF" d="M 52,28 Q 54,58 53,82 Q 51,58 52,28 Z" />
+          <path fill="#FFFFFF" d="M 45,93 C 42,95 39,96 42,97 C 46,96 47,94 45,93 Z" />
+          <path fill="#050508" d="M 53,44 Q 54,62 53,74 Q 52,62 53,44 Z" />
+
+          <!-- Stroke 3 -->
+          <path fill="#FFFFFF" d="M 50,39 C 48,43 44,49 40,56 C 35,63 29,71 20,79 C 17,81 13,84 11,85 C 10,85 10,83 13,81 C 19,77 27,69 33,60 C 39,51 44,44 47,39 Z" />
+          <path fill="#FFFFFF" d="M 16,84 C 12,87 10,89 12,89 C 15,87 18,83 16,84 Z" />
+          <path fill="#FFFFFF" d="M 22,79 C 19,82 17,84 20,83 Z" />
+          <path fill="#FFFFFF" d="M 28,73 Q 22,78 18,82 Q 22,77 28,73 Z" />
+          <path fill="#050508" d="M 33,66 Q 26,73 20,78 Q 26,72 33,66 Z" />
+
+          <!-- Stroke 4 -->
+          <path fill="#FFFFFF" d="M 55,41 C 59,46 65,54 72,63 C 78,70 84,77 91,82 C 95,84 97,85 95,86 C 92,87 87,85 81,81 C 74,76 67,68 61,59 C 57,52 55,46 55,41 Z" />
+          <path fill="#FFFFFF" d="M 93,84 C 97,86 98,87 95,87 Z" />
+          <path fill="#FFFFFF" d="M 86,83 C 90,85 91,86 88,86 Z" />
+          <path fill="#FFFFFF" d="M 76,73 Q 84,78 90,82 Q 84,77 76,73 Z" />
+          <path fill="#050508" d="M 68,67 Q 76,74 84,79 Q 76,73 68,67 Z" />
+
+          <!-- Stroke 5 -->
+          <path fill="#FFFFFF" d="M 35,61 C 42,60 51,60 61,61 C 66,61 73,62 75,64 C 76,66 73,67 69,66 C 59,65 47,65 37,66 C 33,66 31,64 33,62 C 34,61 35,61 35,61 Z" />
+          <path fill="#FFFFFF" d="M 40,63 Q 53,62 65,63 Q 53,63.5 40,63 Z" />
+
+          <!-- Splatters -->
+          <circle fill="#FFFFFF" cx="37" cy="17" r="1.6" />
+          <circle fill="#FFFFFF" cx="42" cy="15" r="1.0" />
+          <circle fill="#FFFFFF" cx="22" cy="27" r="1.4" />
+          <circle fill="#FFFFFF" cx="86" cy="30" r="1.5" />
+          <circle fill="#FFFFFF" cx="89" cy="33" r="1.0" />
+          <circle fill="#FFFFFF" cx="84" cy="40" r="1.2" />
+          <circle fill="#FFFFFF" cx="9" cy="87" r="1.7" />
+          <circle fill="#FFFFFF" cx="6" cy="90" r="1.1" />
+          <circle fill="#FFFFFF" cx="12" cy="91" r="0.8" />
+          <path fill="#FFFFFF" d="M 14,86 Q 11,88 13,89 Z" />
+          <circle fill="#FFFFFF" cx="97" cy="85" r="1.6" />
+          <circle fill="#FFFFFF" cx="100" cy="88" r="1.0" />
+          <circle fill="#FFFFFF" cx="94" cy="89" r="1.3" />
+          <circle fill="#FFFFFF" cx="41" cy="98" r="1.4" />
+          <circle fill="#FFFFFF" cx="38" cy="96" r="0.9" />
+          <circle fill="#FFFFFF" cx="45" cy="51" r="0.8" />
+          <circle fill="#FFFFFF" cx="63" cy="52" r="0.9" />
+        </svg>
+      </div>
+      <div class="card-label">OneUI / Android 14</div>
+      <div class="card-sub">Squircle Adaptive Icon</div>
+    </div>
+
+    <div class="card">
+      <div class="launcher-box circle">
+        <svg viewBox="0 0 108 108">
+          <!-- Same static artwork -->
+          <path fill="#FFFFFF" d="M 26,30 C 24,26 28,19 38,18 C 44,17 43,26 36,30 C 46,29 64,29 74,30 C 81,30 85,32 82,36 C 79,39 71,38 67,37 C 55,37 38,38 27,40 C 24,40 22,37 23,34 Z" />
+          <path fill="#FFFFFF" d="M 38,32 Q 55,31 72,32 Q 55,33 38,32 Z" />
+          <path fill="#FFFFFF" d="M 77,29 C 81,29 83,31 79,32 Z" />
+          <path fill="#FFFFFF" d="M 80,34 C 84,35 83,37 79,37 Z" />
+          <path fill="#050508" d="M 44,34 Q 58,33 66,35 Q 58,35 44,34 Z" />
+
+          <path fill="#FFFFFF" d="M 52,14 C 48,15 46,19 49,23 C 51,25 56,26 57,29 C 58,33 57,41 58,51 C 59,66 58,79 57,86 C 56,90 53,93 47,94 C 43,94 41,92 43,90 C 46,88 49,85 49,81 C 50,71 50,53 49,39 C 48,29 46,21 52,14 Z" />
+          <path fill="#FFFFFF" d="M 52,28 Q 54,58 53,82 Q 51,58 52,28 Z" />
+          <path fill="#FFFFFF" d="M 45,93 C 42,95 39,96 42,97 C 46,96 47,94 45,93 Z" />
+          <path fill="#050508" d="M 53,44 Q 54,62 53,74 Q 52,62 53,44 Z" />
+
+          <path fill="#FFFFFF" d="M 50,39 C 48,43 44,49 40,56 C 35,63 29,71 20,79 C 17,81 13,84 11,85 C 10,85 10,83 13,81 C 19,77 27,69 33,60 C 39,51 44,44 47,39 Z" />
+          <path fill="#FFFFFF" d="M 16,84 C 12,87 10,89 12,89 C 15,87 18,83 16,84 Z" />
+          <path fill="#FFFFFF" d="M 22,79 C 19,82 17,84 20,83 Z" />
+          <path fill="#FFFFFF" d="M 28,73 Q 22,78 18,82 Q 22,77 28,73 Z" />
+          <path fill="#050508" d="M 33,66 Q 26,73 20,78 Q 26,72 33,66 Z" />
+
+          <path fill="#FFFFFF" d="M 55,41 C 59,46 65,54 72,63 C 78,70 84,77 91,82 C 95,84 97,85 95,86 C 92,87 87,85 81,81 C 74,76 67,68 61,59 C 57,52 55,46 55,41 Z" />
+          <path fill="#FFFFFF" d="M 93,84 C 97,86 98,87 95,87 Z" />
+          <path fill="#FFFFFF" d="M 86,83 C 90,85 91,86 88,86 Z" />
+          <path fill="#FFFFFF" d="M 76,73 Q 84,78 90,82 Q 84,77 76,73 Z" />
+          <path fill="#050508" d="M 68,67 Q 76,74 84,79 Q 76,73 68,67 Z" />
+
+          <path fill="#FFFFFF" d="M 35,61 C 42,60 51,60 61,61 C 66,61 73,62 75,64 C 76,66 73,67 69,66 C 59,65 47,65 37,66 C 33,66 31,64 33,62 C 34,61 35,61 35,61 Z" />
+          <path fill="#FFFFFF" d="M 40,63 Q 53,62 65,63 Q 53,63.5 40,63 Z" />
+
+          <circle fill="#FFFFFF" cx="37" cy="17" r="1.6" />
+          <circle fill="#FFFFFF" cx="42" cy="15" r="1.0" />
+          <circle fill="#FFFFFF" cx="22" cy="27" r="1.4" />
+          <circle fill="#FFFFFF" cx="86" cy="30" r="1.5" />
+          <circle fill="#FFFFFF" cx="89" cy="33" r="1.0" />
+          <circle fill="#FFFFFF" cx="84" cy="40" r="1.2" />
+          <circle fill="#FFFFFF" cx="9" cy="87" r="1.7" />
+          <circle fill="#FFFFFF" cx="6" cy="90" r="1.1" />
+          <circle fill="#FFFFFF" cx="12" cy="91" r="0.8" />
+          <path fill="#FFFFFF" d="M 14,86 Q 11,88 13,89 Z" />
+          <circle fill="#FFFFFF" cx="97" cy="85" r="1.6" />
+          <circle fill="#FFFFFF" cx="100" cy="88" r="1.0" />
+          <circle fill="#FFFFFF" cx="94" cy="89" r="1.3" />
+          <circle fill="#FFFFFF" cx="41" cy="98" r="1.4" />
+          <circle fill="#FFFFFF" cx="38" cy="96" r="0.9" />
+          <circle fill="#FFFFFF" cx="45" cy="51" r="0.8" />
+          <circle fill="#FFFFFF" cx="63" cy="52" r="0.9" />
+        </svg>
+      </div>
+      <div class="card-label">Pixel Launcher</div>
+      <div class="card-sub">Circle Adaptive Icon</div>
+    </div>
+  </div>
+
+  <script>
+    function replayAnimation() {
+      const svg = document.getElementById('splashSvg');
+      svg.classList.remove('playing');
+      void svg.offsetWidth; // trigger reflow
+      svg.classList.add('playing');
+    }
+  </script>
+</body>
+</html>

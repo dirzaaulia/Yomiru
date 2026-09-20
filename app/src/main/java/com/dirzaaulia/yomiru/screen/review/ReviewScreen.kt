@@ -2,15 +2,18 @@ package com.dirzaaulia.yomiru.screen.review
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -30,7 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import com.dirzaaulia.yomiru.model.MalReview
+import com.dirzaaulia.yomiru.model.MediaReview
 import com.dirzaaulia.yomiru.screen.component.DynamicCircleOutlineText
 import com.dirzaaulia.yomiru.screen.component.ImageWithCaption
 import com.dirzaaulia.yomiru.ui.common.NetworkImage
@@ -39,22 +42,29 @@ import com.dirzaaulia.yomiru.util.getCarouselHomeSize
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReviewScreen(
-    item: MalReview
+    item: MediaReview
 ) {
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val carouselSize = getCarouselHomeSize(windowSizeClass)
     val scrollState = rememberScrollState()
-    val tooltipState = rememberTooltipState()
 
     Scaffold { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
-                .padding(paddingValues)
-                .verticalScroll(scrollState),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxSize()
+                .padding(paddingValues),
+            contentAlignment = Alignment.TopCenter
         ) {
+            Column(
+                modifier = Modifier
+                    .widthIn(max = 900.dp)
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .verticalScroll(scrollState),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
             Row(
-                modifier = Modifier.padding(horizontal = 16.dp),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ImageWithCaption(
@@ -71,190 +81,60 @@ fun ReviewScreen(
                     textSyle = MaterialTheme.typography.displayLarge
                 )
             }
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                NetworkImage(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(CircleShape),
-                    url = item.user?.images?.webp?.imageUrl,
-                    contentDescription = item.user?.username,
-                    contentScale = ContentScale.FillBounds
-                )
-                Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val userAvatar = item.user?.images?.webp?.imageUrl
+                if (!userAvatar.isNullOrBlank()) {
+                    NetworkImage(
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(CircleShape),
+                        url = userAvatar,
+                        contentDescription = item.user?.username,
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                }
+
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = item.user?.username.toString(),
+                    text = item.user?.username.orEmpty().ifBlank { "User Review" },
                     style = MaterialTheme.typography.headlineMedium
                 )
             }
-            Spacer(modifier = Modifier.height(8.dp))
-            FlowRow(
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                TooltipBox(
-                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(4.dp),
-                    tooltip = {
-                        PlainTooltip { Text("Overall") }
-                    },
-                    state = tooltipState
+            Spacer(modifier = Modifier.height(16.dp))
+            if (item.reactions != null) {
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Card(
-                        border = BorderStroke(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(4.dp),
-                            text = "⭐ ${item.reactions?.overall}"
-                        )
+                    if ((item.reactions.overall ?: 0) > 0) {
+                        Card(border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground)) {
+                            Text(modifier = Modifier.padding(6.dp), text = "⭐ ${item.reactions.overall}")
+                        }
                     }
-                }
-                TooltipBox(
-                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(4.dp),
-                    tooltip = {
-                        PlainTooltip { Text("Nice") }
-                    },
-                    state = tooltipState
-                ) {
-                    Card(
-                        border = BorderStroke(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(4.dp),
-                            text = "\uD83D\uDE0A ${item.reactions?.nice}"
-                        )
+                    if ((item.reactions.nice ?: 0) > 0) {
+                        Card(border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground)) {
+                            Text(modifier = Modifier.padding(6.dp), text = "😊 ${item.reactions.nice}")
+                        }
                     }
-                }
-                TooltipBox(
-                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(4.dp),
-                    tooltip = {
-                        PlainTooltip { Text("Nice") }
-                    },
-                    state = tooltipState
-                ) {
-                    Card(
-                        border = BorderStroke(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(4.dp),
-                            text = "❤\uFE0F ${item.reactions?.loveIt}"
-                        )
-                    }
-                }
-                TooltipBox(
-                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(4.dp),
-                    tooltip = {
-                        PlainTooltip { Text("Nice") }
-                    },
-                    state = tooltipState
-                ) {
-                    Card(
-                        border = BorderStroke(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(4.dp),
-                            text = "\uD83D\uDE02 ${item.reactions?.funny}"
-                        )
-                    }
-                }
-                TooltipBox(
-                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(4.dp),
-                    tooltip = {
-                        PlainTooltip { Text("Nice") }
-                    },
-                    state = tooltipState
-                ) {
-                    Card(
-                        border = BorderStroke(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(4.dp),
-                            text = "\uD83D\uDE15 ${item.reactions?.confusing}"
-                        )
-                    }
-                }
-                TooltipBox(
-                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(4.dp),
-                    tooltip = {
-                        PlainTooltip { Text("Nice") }
-                    },
-                    state = tooltipState
-                ) {
-                    Card(
-                        border = BorderStroke(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(4.dp),
-                            text = "\uD83D\uDCDA ${item.reactions?.informative}"
-                        )
-                    }
-                }
-                TooltipBox(
-                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(4.dp),
-                    tooltip = {
-                        PlainTooltip { Text("Nice") }
-                    },
-                    state = tooltipState
-                ) {
-                    Card(
-                        border = BorderStroke(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(4.dp),
-                            text = "✍\uFE0F ${item.reactions?.wellWritten}"
-                        )
-                    }
-                }
-                TooltipBox(
-                    positionProvider = TooltipDefaults.rememberTooltipPositionProvider(4.dp),
-                    tooltip = {
-                        PlainTooltip { Text("Nice") }
-                    },
-                    state = tooltipState
-                ) {
-                    Card(
-                        border = BorderStroke(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(4.dp),
-                            text = "\uD83C\uDFA8 ${item.reactions?.creative}"
-                        )
+                    if ((item.reactions.loveIt ?: 0) > 0) {
+                        Card(border = BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground)) {
+                            Text(modifier = Modifier.padding(6.dp), text = "❤️ ${item.reactions.loveIt}")
+                        }
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = item.review.toString(),
-                style = MaterialTheme.typography.titleLarge
+                text = item.review.orEmpty(),
+                style = MaterialTheme.typography.bodyLarge
             )
         }
     }
 }
-
+}

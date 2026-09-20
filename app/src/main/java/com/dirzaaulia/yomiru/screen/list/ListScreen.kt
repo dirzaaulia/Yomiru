@@ -1,261 +1,282 @@
 package com.dirzaaulia.yomiru.screen.list
 
-import android.content.ActivityNotFoundException
-import android.util.Log
-import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
-import androidx.browser.customtabs.CustomTabsIntent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.BottomSheetScaffoldState
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LoadingIndicator
-import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
-import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.window.core.layout.WindowSizeClass.Companion.HEIGHT_DP_MEDIUM_LOWER_BOUND
-import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
-import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_MEDIUM_LOWER_BOUND
-import com.dirzaaulia.yomiru.AuthCallbackViewModel
-import com.dirzaaulia.yomiru.BuildConfig
-import com.dirzaaulia.yomiru.MALAuth
-import com.dirzaaulia.yomiru.pagingsource.AnimeStatus
+import com.dirzaaulia.yomiru.model.MediaEntry
+import com.dirzaaulia.yomiru.navigation.Detail
+import com.dirzaaulia.yomiru.navigation.Onboarding
+import com.dirzaaulia.yomiru.screen.home.YomiruMenu
+import com.dirzaaulia.yomiru.ui.common.ErrorSection
+import com.dirzaaulia.yomiru.ui.common.ExpressiveFloatingBar
 import com.dirzaaulia.yomiru.ui.common.NetworkImage
-import com.dirzaaulia.yomiru.ui.common.SegmentedButtons
-import com.dirzaaulia.yomiru.ui.common.VerticalStaggeredGridPaging
-import com.dirzaaulia.yomiru.util.PKCEUtil
+import com.dirzaaulia.yomiru.util.ResponseResult
 import com.dirzaaulia.yomiru.util.capitalizeWords
-import kotlinx.coroutines.launch
+import com.dirzaaulia.yomiru.util.getCarouselHomeSize
+import com.dirzaaulia.yomiru.util.success
+import com.dirzaaulia.yomiru.util.toHumanReadableError
 import org.koin.androidx.compose.koinViewModel
-import java.util.UUID
+import java.util.Locale
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ListScreen(
     viewModel: ListViewModel = koinViewModel(),
-    authViewModel: AuthCallbackViewModel = koinViewModel(),
     backStack: NavBackStack<NavKey>
 ) {
-    val context = LocalContext.current
-    val onBackPressedDispatcherOwner = LocalOnBackPressedDispatcherOwner.current
+    val selectedMenu by viewModel.selectedMenu.collectAsStateWithLifecycle()
+    val token by viewModel.accessToken.collectAsStateWithLifecycle("")
+    val listResult by viewModel.currentList.collectAsStateWithLifecycle()
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+    val carouselSize = getCarouselHomeSize(windowSizeClass)
 
-    val accessToken by viewModel.accessToken.collectAsStateWithLifecycle(initialValue = null)
-    val nodeList = viewModel.nodeList.collectAsLazyPagingItems()
-    val selectedStatus by viewModel.selectedStatus.collectAsStateWithLifecycle()
+    var selectedStatusFilter by remember { mutableStateOf("ALL") }
 
-    val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
-    val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
-    var statusExpanded by remember { mutableStateOf(false) }
+    val statusFilters = listOf(
+        "ALL" to "All Statuses",
+        "CURRENT" to "Watching / Reading",
+        "PLANNING" to "Plan to Watch / Read",
+        "COMPLETED" to "Completed",
+        "PAUSED" to "Paused",
+        "DROPPED" to "Dropped",
+        "REPEATING" to "Repeating"
+    )
 
-    when {
-        accessToken == null -> {
-            Box(modifier = Modifier.fillMaxSize()) {
-                LoadingIndicator(modifier = Modifier.fillMaxSize())
-            }
-        }
-
-        accessToken!!.isEmpty() -> {
-            MyAnimeListAuthDialog(
-                dialogTitle = "MyAnimeList Authorization",
-                dialogText = "You are about to access your Anime & Manga list. " +
-                        "Please authorize this app to access your MyAnimeList data",
-                icon = Icons.Default.Info,
-                onDismissRequest = {
-                    onBackPressedDispatcherOwner?.onBackPressedDispatcher?.onBackPressed()
-                },
-                onConfirmation = {
-                    val authUrl = buildMyAnimeListAuthUrl(
-                        viewModel = authViewModel
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = if (selectedMenu == YomiruMenu.Manga) "My Manga Library" else "My Anime Watchlist",
+                        fontWeight = FontWeight.ExtraBold
                     )
-                    val customTabsIntent = CustomTabsIntent.Builder().build()
-                    try {
-                        customTabsIntent.launchUrl(context, authUrl.toUri())
-                    } catch (e: ActivityNotFoundException) {
-                        Log.e("ListScreen", "Custom Tab not supported or browser not found.", e)
-                        scope.launch {
-                            snackbarHostState.showSnackbar("Your current browser not support to do this!")
-                        }
-                    }
+                }
+            )
+        },
+        floatingActionButtonPosition = FabPosition.Center,
+        floatingActionButton = {
+            ExpressiveFloatingBar(
+                selectedMenu = selectedMenu,
+                onMenuSelected = { menu ->
+                    viewModel.setSelectedMenu(menu)
                 }
             )
         }
-
-        else -> {
-            val gridColumn =
-                if (!windowSizeClass.isHeightAtLeastBreakpoint(HEIGHT_DP_MEDIUM_LOWER_BOUND)) {
-                    StaggeredGridCells.Adaptive(120.dp)
-                } else {
-                    when {
-                        windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_EXPANDED_LOWER_BOUND) -> {
-                            // return for EXPANDED width size class
-                            StaggeredGridCells.Adaptive(120.dp)
-                        }
-
-                        windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_MEDIUM_LOWER_BOUND) -> {
-                            // return for MEDIUM width size class
-                            StaggeredGridCells.Adaptive(120.dp)
-                        }
-
-                        else -> {
-                            // return for COMPACT width size class
-                            StaggeredGridCells.Fixed(2)
-                        }
-                    }
-                }
-            BottomSheetScaffold(
-                modifier = Modifier.fillMaxSize(),
-                scaffoldState = bottomSheetScaffoldState,
-                snackbarHost = { SnackbarHost(snackbarHostState) },
-                sheetPeekHeight = 0.dp,
-                sheetContent = {
-                    Text(
-                        text = "Sheet Content For Now",
-                        style = MaterialTheme.typography.displayLarge
-                    )
-                }
-            ) { paddingValues ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                ) {
-                    SegmentedButtons { index ->
-                        viewModel.setSelectedIndex(index)
-                    }
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            Column(
+                modifier = Modifier
+                    .widthIn(max = 1200.dp)
+                    .fillMaxSize()
+            ) {
+                if (token.isBlank()) {
+                    // Non-Logged-In Guest Prompt
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            modifier = Modifier.weight(1f),
-                            text = "Your List",
-                            style = MaterialTheme.typography.displayLarge
-                        )
-                        Box {
-                            AssistChip(
-                                onClick = {
-                                    statusExpanded = !statusExpanded
-                                },
-                                label = {
-                                    Text(
-                                        text = AnimeStatus.entries[selectedStatus]
-                                            .name
-                                            .replace("_", " ")
-                                            .capitalizeWords()
-                                    )
-                                }
-                            )
-                            DropdownMenu(
-                                expanded = statusExpanded,
-                                onDismissRequest = { statusExpanded = false }
-                            ) {
-                                AnimeStatus.entries.forEachIndexed { index, item ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                item.name
-                                                    .replace("_", " ")
-                                                    .capitalizeWords()
-                                            )
-                                        },
-                                        onClick = {
-                                            statusExpanded = false
-                                            viewModel.setSelectedStatus(index)
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    VerticalStaggeredGridPaging(
-                        list = nodeList,
-                        columns = gridColumn,
-                        emptyContent = {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "No anime yet on your list for status ${
-                                        AnimeStatus.entries[selectedStatus]
-                                            .name
-                                            .replace("_", " ")
-                                            .capitalizeWords()
-                                    }"
-                                )
-                            }
-                        }
-                    ) { item ->
                         Card(
                             modifier = Modifier
-                                .clickable {
-                                    scope.launch {
-                                        if (bottomSheetScaffoldState.bottomSheetState.currentValue
-                                                == SheetValue.Hidden) {
-                                            bottomSheetScaffoldState.bottomSheetState.expand()
-                                        } else bottomSheetScaffoldState.bottomSheetState.hide()
+                                .fillMaxWidth()
+                                .clip(CutCornerShape(topStart = 16.dp, bottomEnd = 16.dp)),
+                            border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(24.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Bookmark,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "ANILIST ACCOUNT REQUIRED",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Sign in with your AniList account to manage your watchlist, update episode progress, and track your library.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.height(20.dp))
+                                Button(
+                                    onClick = { backStack.add(Onboarding) },
+                                    shape = CutCornerShape(topStart = 10.dp, bottomEnd = 10.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(18.dp))
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("SIGN IN WITH ANILIST", fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    when (listResult) {
+                        ResponseResult.Loading -> Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            LoadingIndicator(
+                                modifier = Modifier.size(100.dp),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                        is ResponseResult.Success<*> -> {
+                            listResult.success { groups ->
+                                val allGroups = groups ?: emptyList()
+                                val filteredEntries = if (selectedStatusFilter == "ALL") {
+                                    allGroups.flatMap { it.entries }
+                                } else {
+                                    allGroups.filter { it.status.equals(selectedStatusFilter, ignoreCase = true) }
+                                        .flatMap { it.entries }
+                                }
+
+                                Column(modifier = Modifier.fillMaxSize()) {
+                                    // Status Filter Chips
+                                    FlowRow(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        statusFilters.forEach { (code, label) ->
+                                            val isSelected = selectedStatusFilter.equals(code, ignoreCase = true)
+                                            AssistChip(
+                                                onClick = { selectedStatusFilter = code },
+                                                label = { Text(label) },
+                                                shape = CutCornerShape(topStart = 8.dp, bottomEnd = 8.dp),
+                                                colors = if (isSelected) {
+                                                    AssistChipDefaults.assistChipColors(
+                                                        containerColor = MaterialTheme.colorScheme.primary,
+                                                        labelColor = MaterialTheme.colorScheme.onPrimary
+                                                    )
+                                                } else AssistChipDefaults.assistChipColors()
+                                            )
+                                        }
+                                    }
+
+                                    if (filteredEntries.isEmpty()) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .padding(32.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "No titles in this category",
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    } else {
+                                        LazyVerticalGrid(
+                                            columns = GridCells.Adaptive(minSize = 160.dp),
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentPadding = PaddingValues(16.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                                        ) {
+                                            items(filteredEntries) { item ->
+                                                UserMediaListCard(
+                                                    item = item,
+                                                    height = 224.dp,
+                                                    onClick = {
+                                                        item.id?.let { id ->
+                                                            backStack.add(Detail(id = id, type = if (selectedMenu == YomiruMenu.Manga) "manga" else "anime"))
+                                                        }
+                                                    }
+                                                )
+                                            }
+                                        }
                                     }
                                 }
+                            }
+                        }
+
+                        is ResponseResult.Error -> Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(24.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            NetworkImage(
-                                modifier = Modifier
-                                    .align(Alignment.CenterHorizontally)
-                                    .clip(MaterialShapes.Slanted.toShape())
-                                    .fillMaxWidth(),
-                                url = item.node?.mainPicture?.large.toString(),
-                                contentDescription = item.node?.title,
-                                contentScale = ContentScale.FillWidth
-                            )
-                            Text(
-                                modifier = Modifier.padding(horizontal = 8.dp),
-                                text = item.node?.title.toString(),
-                                style = MaterialTheme.typography.titleLarge
+                            ErrorSection(
+                                errorMessage = (listResult as ResponseResult.Error).throwable.toHumanReadableError(),
+                                doRetry = { viewModel.refreshList() }
                             )
                         }
                     }
@@ -266,79 +287,97 @@ fun ListScreen(
 }
 
 @Composable
-fun MyAnimeListAuthDialog(
-    onDismissRequest: () -> Unit,
-    onConfirmation: () -> Unit,
-    dialogTitle: String,
-    dialogText: String,
-    icon: ImageVector,
+fun UserMediaListCard(
+    item: MediaEntry,
+    height: Dp = 220.dp,
+    onClick: () -> Unit
 ) {
-    AlertDialog(
-        icon = {
-            Icon(icon, contentDescription = "Example Icon")
-        },
-        title = {
-            Text(text = dialogTitle)
-        },
-        text = {
-            Text(text = dialogText)
-        },
-        onDismissRequest = {
-            onDismissRequest()
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onConfirmation()
-                }
+    val listEntry = item.mediaListEntry
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(CutCornerShape(topStart = 12.dp, bottomEnd = 12.dp))
+            .clickable { onClick() },
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        )
+    ) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(height)
             ) {
-                Text("Confirm")
+                NetworkImage(
+                    modifier = Modifier.fillMaxSize(),
+                    url = item.images?.webp?.largeImageUrl ?: item.images?.jpg?.imageUrl,
+                    contentDescription = item.title,
+                    contentScale = ContentScale.Crop
+                )
+
+                if (listEntry?.status != null) {
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(6.dp),
+                        shape = CutCornerShape(topStart = 4.dp, bottomEnd = 4.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ) {
+                        Text(
+                            text = listEntry.status.replace("_", " ").capitalizeWords(),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.ExtraBold,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+
+                if (listEntry?.score != null && listEntry.score > 0.0) {
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(6.dp),
+                        shape = CutCornerShape(topEnd = 4.dp, bottomStart = 4.dp),
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(imageVector = Icons.Default.Star, contentDescription = null, modifier = Modifier.size(12.dp))
+                            Spacer(modifier = Modifier.width(2.dp))
+                            Text(
+                                text = String.format(Locale.getDefault(), "%.1f", listEntry.score),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Black
+                            )
+                        }
+                    }
+                }
             }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    onDismissRequest()
-                }
-            ) {
-                Text("Dismiss")
+
+            Column(modifier = Modifier.padding(10.dp)) {
+                Text(
+                    text = item.title.orEmpty(),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "Progress: ${listEntry?.progress ?: 0} / ${item.episodes ?: "?"}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
-    )
-}
-
-private fun buildMyAnimeListAuthUrl(
-    viewModel: AuthCallbackViewModel
-): String {
-    // --- PKCE Generation ---
-    val codeVerifier = PKCEUtil.generateCodeVerifier()
-    val codeChallenge = PKCEUtil.generateCodeChallenge(codeVerifier)
-
-    // --- State Generation ---
-    val state = UUID.randomUUID().toString()
-
-    val malAuth = MALAuth(
-        codeVerifier = codeVerifier,
-        codeChallenge = codeChallenge,
-        state = state
-    )
-    viewModel.malAuth = malAuth
-
-    val clientId = BuildConfig.MAL_CLIENT_ID
-
-    val authUrl = "https://myanimelist.net/v1/oauth2/authorize".toUri()
-        .buildUpon()
-        .appendQueryParameter("response_type", "code")
-        .appendQueryParameter("client_id", clientId)
-        .appendQueryParameter("state", state)
-        .appendQueryParameter("code_challenge", codeChallenge)
-        // Add any other required parameters like 'scope'
-        .appendQueryParameter("scope", "write:users") // Example scopes
-        .build()
-        .toString()
-
-    Log.d("LoginWithMALButton", "Auth URL: $authUrl")
-    Log.d("LoginWithMALButton", "Code Verifier (store this): $codeVerifier")
-
-    return authUrl
+    }
 }

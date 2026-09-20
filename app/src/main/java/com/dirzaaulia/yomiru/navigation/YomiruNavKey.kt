@@ -1,14 +1,16 @@
 package com.dirzaaulia.yomiru.navigation
 
 import androidx.navigation3.runtime.NavKey
-import com.dirzaaulia.yomiru.model.MalEntry
-import com.dirzaaulia.yomiru.model.MalReview
-import com.dirzaaulia.yomiru.model.response.MalRecommendation
+import com.dirzaaulia.yomiru.model.MediaReview
+import com.dirzaaulia.yomiru.model.response.MediaRecommendation
 import kotlinx.serialization.Serializable
 
 enum class SearchType {
     SEARCH_ANIME, SEARCH_MANGA, SEASON, TOP, RECOMMENDED, REVIEW
 }
+
+@Serializable
+object Onboarding : NavKey
 
 @Serializable
 object Home : NavKey
@@ -29,7 +31,10 @@ data class Detail(
 object List: NavKey
 
 @Serializable
-data class Review(val malReview: MalReview): NavKey
+data class Review(val mediaReview: MediaReview): NavKey
 
 @Serializable
-data class Recommendation(val malRecommendation: MalRecommendation): NavKey
+data class Recommendation(val mediaRecommendation: MediaRecommendation): NavKey
+
+@Serializable
+object Developer: NavKey

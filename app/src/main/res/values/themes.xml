@@ -3,18 +3,22 @@
 
     <style name="Theme.Yomiru.SplashScreen" parent="Theme.SplashScreen">
         <!-- Set the splash screen background, animated icon, and animation duration. -->
-        <item name="windowSplashScreenBackground">#424242</item>
+        <item name="windowSplashScreenBackground">#050508</item>
 
         <!-- Use windowSplashScreenAnimatedIcon to add either a drawable or an
              animated drawable. One of these is required. -->
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/avd_kanji_hon_splash</item>
         <!-- Required for animated icons -->
-        <item name="windowSplashScreenAnimationDuration">1000</item>
+        <item name="windowSplashScreenAnimationDuration">3000</item>
 
         <!-- Set the theme of the Activity that directly follows your splash screen. -->
         <!-- Required -->
         <item name="postSplashScreenTheme">@style/Theme.Yomiru</item>
     </style>
 
-    <style name="Theme.Yomiru" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.Yomiru" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="android:windowBackground">#050508</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
 </resources>
