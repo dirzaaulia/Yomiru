@@ -16,11 +16,11 @@ on:
       status:
         description: 'Release Status'
         required: true
-        default: 'completed'
+        default: 'draft'
         type: choice
         options:
-          - completed
           - draft
+          - completed
           - inProgress
           - halted
   push:
@@ -77,7 +77,7 @@ jobs:
           packageName: com.dirzaaulia.yomiru
           releaseFiles: app/build/outputs/bundle/release/app-release.aab
           track: ${{ inputs.track || 'production' }}
-          status: ${{ inputs.status || 'completed' }}
+          status: ${{ inputs.status || 'draft' }}
 
       - name: Cleanup Keystore
         if: always()
