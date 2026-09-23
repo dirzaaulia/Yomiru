@@ -32,6 +32,18 @@ android {
         )
     }
 
+    signingConfigs {
+        create("release") {
+            val keystoreFile = project.rootProject.file("keystore.jks")
+            if (keystoreFile.exists()) {
+                storeFile = keystoreFile
+                storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
+                keyAlias = System.getenv("KEY_ALIAS") ?: ""
+                keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -39,6 +51,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            val releaseSigning = signingConfigs.getByName("release")
+            if (releaseSigning.storeFile?.exists() == true) {
+                signingConfig = releaseSigning
+            }
         }
     }
     compileOptions {
@@ -126,15 +142,25 @@ dependencies {
 
     //SplashScreen
     implementation(libs.androidx.splashscreen)
+
+    //Material Components
+    implementation(libs.material)
 }
 
-// Helper function to read from local.properties
+// Helper function to read property from environment or local.properties
 fun getLocalProperty(key: String, project: Project): String {
+    val envValue = System.getenv(key)
+    if (!envValue.isNullOrBlank()) {
+        return "\"${envValue.replace("\"", "")}\""
+    }
     val properties = Properties()
     val localPropertiesFile = project.rootProject.file("local.properties")
     if (localPropertiesFile.exists()) {
         properties.load(FileInputStream(localPropertiesFile))
-        return properties.getProperty(key)?.replace("\"", "")?.let { "\"$it\"" } ?: "\"\""
+        val prop = properties.getProperty(key)
+        if (!prop.isNullOrBlank()) {
+            return "\"${prop.replace("\"", "")}\""
+        }
     }
-    return "" // Return empty or handle error if not found
+    return "\"\""
 }

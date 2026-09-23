@@ -16,3 +16,16 @@ local.properties
 .claude/
 .agents/
 
+# Keystore & Signing files
+*.jks
+*.keystore
+keystore.properties
+
+# Google Play & Cloud Service Account credentials
+*service_account*.json
+yomiru-*.json
+
+# Local Release Bundles & Builds
+app/release/
+*.aab
+

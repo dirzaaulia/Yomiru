@@ -16,7 +16,7 @@
         <item name="postSplashScreenTheme">@style/Theme.Yomiru</item>
     </style>
 
-    <style name="Theme.Yomiru" parent="Theme.Material3.Dark.NoActionBar">
+    <style name="Theme.Yomiru" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:windowBackground">#050508</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
