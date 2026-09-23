@@ -19,8 +19,15 @@ android {
         applicationId = "com.dirzaaulia.yomiru"
         minSdk = 29
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        
+        // Dynamically compute unique versionCode based on epoch minutes since 2025-01-01
+        // or override via VERSION_CODE env variable / versionCode Gradle property
+        val envVersionCode = System.getenv("VERSION_CODE")?.toIntOrNull()
+        val propVersionCode = (project.findProperty("versionCode") as? String)?.toIntOrNull()
+        val computedVersionCode = envVersionCode ?: propVersionCode ?: ((System.currentTimeMillis() - 1735689600000L) / 60000L).toInt().coerceAtLeast(1)
+
+        versionCode = computedVersionCode
+        versionName = "1.0.$computedVersionCode"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
